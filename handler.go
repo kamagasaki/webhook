@@ -52,8 +52,8 @@ func PostMessage(c *fiber.Ctx) error {
 				resp.Response = fmt.Sprintf("Nama: %s\nE-Mail: %s", nama, email)
 			}
 		} else {
-			// Handle incoming message for non-login requests
-			resp = HandlerIncomingMessage(msg)
+			// Random response for incorrect secret code
+			resp.Response = getRandomIncorrectSecretMessage()
 		}
 	} else {
 		// Random response for incorrect secret code
