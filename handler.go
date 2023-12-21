@@ -1,7 +1,7 @@
-Copy code
 package webhook
 
 import (
+	"log"
 	"math/rand"
 	"time"
 
@@ -25,10 +25,23 @@ func PostMessage(c *fiber.Ctx) error {
 			return err
 		}
 
-		// Handle login request
+		// Check if the message is a login request
 		if ws.IsLoginRequest(msg, WAKeyword) {
-			resp = HandlerQRLogin(msg, WAKeyword)
+			// Check if the phone number is registered
+			registered, err := isPhoneNumberRegistered(msg.Phone_number)
+			if err != nil {
+				// Handle the error here, for now, we'll log it
+				log.Println("Error checking phone number registration:", err)
+				// You might want to set a response or return an error response to the user
+				resp.Response = "An error occurred while checking phone number registration."
+			} else if registered {
+				resp = HandlerQRLogin(msg, WAKeyword)
+			} else {
+				// Phone number is not registered, handle accordingly
+				resp.Response = getRandomUnregisteredNumber()
+			}
 		} else {
+			// Handle incoming message for non-login requests
 			resp = HandlerIncomingMessage(msg)
 		}
 	} else {
@@ -38,7 +51,7 @@ func PostMessage(c *fiber.Ctx) error {
 	return c.JSON(resp)
 }
 
-// getRandomIncorrectSecretMessage returns a random message for incorrect secret code
+// Randomize response if secret code was invalid
 func getRandomIncorrectSecretMessage() string {
 	// Seed the random number generator
 	rand.Seed(time.Now().UnixNano())
@@ -57,4 +70,25 @@ func getRandomIncorrectSecretMessage() string {
 
 	// Randomly select a message
 	return incorrectSecretMessages[rand.Intn(len(incorrectSecretMessages))]
+}
+
+// Randomize response if number is not registered
+func getRandomUnregisteredNumber() string {
+	// Seed the random number generator
+	rand.Seed(time.Now().UnixNano())
+
+	// Array of possible incorrect secret messages
+	unregisteredNumberMessages := []string{
+		"Oops! It seems like you are not registered!",
+		"Sorry, but you are not registered yet!",
+		"Hmm, something went wrong. Please check the secret code and try again.",
+		"Duhh, sepertinya kakak masih belum daftyar deh...",
+		"Kakak daftar di web kami dulu yaaa....",
+		"Aduh... kami ga nemuin datya kakak :( Daftar dulu yaa",
+		"LAH LU SIAPA BANG???!",
+		"Ndeh... sia ko?",
+	}
+
+	// Randomly select a message
+	return unregisteredNumberMessages[rand.Intn(len(unregisteredNumberMessages))]
 }
