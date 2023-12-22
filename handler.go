@@ -12,42 +12,59 @@ import (
 )
 
 func PostMessage(c *fiber.Ctx) error {
+	var msg model.IteungMessage
+	var resp atmessage.Response
 	var h Header
 	err := c.ReqHeaderParser(&h)
 	if err != nil {
 		return err
 	}
-	var resp atmessage.Response
-	if h.Secret == WebhookSecret {
-		var msg model.IteungMessage
-		err = c.BodyParser(&msg)
-		if err != nil {
-			return err
-		}
 
-		// Check if the message is a login request
-		if ws.IsLoginRequest(msg, WAKeyword) {
-			// Check if the phone number is registered
-			registered, err := isPhoneNumberRegistered(msg.Phone_number)
-			if err != nil {
-				// Handle the error here, for now, we'll log it
-				log.Println("Error checking phone number registration:", err)
-				// You might want to set a response or return an error response to the user
-				resp.Response = "An error occurred while checking phone number registration."
-			} else if registered {
-				resp = HandlerQRLogin(msg, WAKeyword)
-			} else {
-				// Phone number is not registered, handle accordingly
-				resp.Response = getRandomUnregisteredNumber()
-			}
-		} else {
-			// Handle incoming message for non-login requests
-			resp = HandlerIncomingMessage(msg)
+	if msg.Message == "Babi" || msg.Message == "Anjing" || msg.Message == "goblok" {
+		randm := []string{
+			"Ih  kasar amat dahh",
+			"I thought" + msg.Message + "was your mom!",
+			"APASIIII",
+			"Keren lu begitu?",
+			"Jangan galak galak dong kak, aku takut tauu",
 		}
+		dt := &wa.TextMessage{
+			To:       msg.Phone_number,
+			IsGroup:  false,
+			Messages: GetRandomString(randm),
+		}
+		resp, _ = atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv("TOKEN"), dt, "https://api.wa.my.id/api/send/message/text")
+
+	} else if msg.Message == "cantik" || msg.Message == "ganteng" || msg.Message == "cakep" {
+		dt := &wa.TextMessage{
+			To:       msg.Phone_number,
+			IsGroup:  false,
+			Messages: getRandomThanksMsg()
+		}
+		resp, _ = atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv("TOKEN"), dt, "https://api.wa.my.id/api/send/message/text")
+
 	} else {
-		// Random response for incorrect secret code
+		randm := []string{
+			"Hai Hai Haiii kamuuuui " + msg.Alias_name + "\nrofinya lagi gaadaa \n aku giseuubott salam kenall yaaaa \n Cara penggunaan WhatsAuth ada di link berikut ini ya kak...\n" + link,
+			"IHHH jangan SPAAM berisik tau giseu lagi tidur",
+			"Kamu ganteng tau",
+			"Ihhh kamu cantik banget",
+			"bro, mending beliin aku nasgor",
+			"Jangan galak galak dong kak, aku takut tauu",
+			"Mawar Indah hanya akan muncul dipagi hari, MAKANYA BANGUN PAGI KAK",
+			"Cihuyyyy hari ini giseuu bahagiaaa banget",
+			"Bercandyaaa berrcandyaaaa",
+		}
+		dt := &wa.TextMessage{
+			To:       msg.Phone_number,
+			IsGroup:  false,
+			Messages: GetRandomString(randm),
+		}
+		resp, _ = atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv("TOKEN"), dt, "https://api.wa.my.id/api/send/message/text")
+	} else {
 		resp.Response = getRandomIncorrectSecretMessage()
 	}
+	fmt.Fprintf(w, resp.Response)
 	return c.JSON(resp)
 }
 
@@ -91,4 +108,39 @@ func getRandomUnregisteredNumber() string {
 
 	// Randomly select a message
 	return unregisteredNumberMessages[rand.Intn(len(unregisteredNumberMessages))]
+}
+
+func getRandomThanksMsg() string {
+	// Seed the random number generator
+	rand.Seed(time.Now().UnixNano())
+
+	// Array of possible incorrect secret messages
+	ThankMessages := []string{
+		"Eh?? Thank youu!",
+		"Kamu jugaaa!",
+		"Makasih kaaa.",
+		"Maachihh ayanggg.",
+		"MANG EAAAAAA",
+		"Aelah bang, nagatin bot cantik. Cari cewe asli napa?",
+	}
+
+	// Randomly select a message
+	return ThankMessages[rand.Intn(len(ThankMessages))]
+}
+
+func getRandomRudeResp() string {
+	// Seed the random number generator
+	rand.Seed(time.Now().UnixNano())
+
+	// Array of possible incorrect secret messages
+	RudeResp := []string{
+		"Ih  kasar amat dahh",
+		"I thought" + msg.Message + "was your mom!",
+		"APASIIII",
+		"Keren lu begitu?",
+		"Jangan galak galak dong kak, aku takut tauu",
+	}
+
+	// Randomly select a message
+	return RudeResp[rand.Intn(len(RudeResp))]
 }
