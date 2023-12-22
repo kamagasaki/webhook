@@ -22,21 +22,3 @@ func isPhoneNumberRegistered(phoneNumber string) (bool, error) {
 	}
 	return exists, nil
 }
-
-// FetchUserData retrieves user data from the db_bot table based on the phone number
-func FetchUserData(phoneNumber string) (string, string, error) {
-	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", DBUsername, DBPassword, DBHostname, DBPortNum, DBName)
-	db, err := sql.Open("mysql", connectionString)
-	if err != nil {
-		return "", "", err
-	}
-	defer db.Close()
-
-	var nama, email string
-	err = db.QueryRow("SELECT nama, email FROM db_bot WHERE phone_number = ?", phoneNumber).Scan(&nama, &email)
-	if err != nil {
-		return "", "", err
-	}
-
-	return nama, email, nil
-}
