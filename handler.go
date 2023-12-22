@@ -1,6 +1,7 @@
 package webhook
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -40,9 +41,19 @@ func PostMessage(c *fiber.Ctx) error {
 				// Phone number is not registered, handle accordingly
 				resp.Response = getRandomUnregisteredNumber()
 			}
+		} else if msg.Message == "minta test" {
+			// Fetch user data from db_bot
+			nama, email, err := FetchUserData(msg.Phone_number)
+			if err != nil {
+				// Handle the error here, for now, we'll log it
+				log.Println("Error fetching user data:", err)
+				resp.Response = getRandomIncorrectSecretMessage()
+			} else {
+				resp.Response = fmt.Sprintf("Nama: %s\nE-Mail: %s", nama, email)
+			}
 		} else {
-			// Handle incoming message for non-login requests
-			resp = HandlerIncomingMessage(msg)
+			// Random response for incorrect secret code
+			resp.Response = getRandomIncorrectSecretMessage()
 		}
 	} else {
 		// Random response for incorrect secret code
@@ -82,9 +93,9 @@ func getRandomUnregisteredNumber() string {
 		"Oops! It seems like you are not registered!",
 		"Sorry, but you are not registered yet!",
 		"Hmm, something went wrong. Please check the secret code and try again.",
-		"Duhh, sepertinya kakak masih belum daftyar deh...",
+		"Duhh, sepertinya kakak masih belum daftar deh...",
 		"Kakak daftar di web kami dulu yaaa....",
-		"Aduh... kami ga nemuin datya kakak :( Daftar dulu yaa",
+		"Aduh... kami ga nemuin data kakak :( Daftar dulu yaa",
 		"LAH LU SIAPA BANG???!",
 		"Ndeh... sia ko?",
 	}
