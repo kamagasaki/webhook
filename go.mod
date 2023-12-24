@@ -2,6 +2,13 @@ module github.com/kamagasaki/webhook
 
 go 1.21.3
 
+retract v0.0.1
+retract [v0.0.1, v0.0.9]
+retract (
+    v10.0.1
+    [v0.0.1, v0.0.9]
+)
+
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.8.0
 	github.com/aiteung/atapi v0.1.1
